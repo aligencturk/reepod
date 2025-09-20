@@ -75,6 +75,9 @@ dependencies:
   # OpenAI API
   openai_dart: ^0.2.0
   
+  # Google Gemini API
+  google_generative_ai: ^0.4.4
+  
   # JSON handling
   json_annotation: ^4.9.0
   

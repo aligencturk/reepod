@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:typed_data';
 import '../services/openai_service.dart';
+import '../services/gemini_service.dart';
 import '../services/image_save_service.dart';
 
 /// AI Foto Oluşturma Sayfası
@@ -17,8 +18,10 @@ class _CreatePageState extends State<CreatePage> {
   final OpenAIService _openAIService = OpenAIService();
   final ImageSaveService _imageSaveService = ImageSaveService();
   String _selectedStyle = 'AI Maceracı';
+  String _selectedModel = 'OpenAI DALL-E 3';
   bool _isGenerating = false;
   Uint8List? _generatedImage;
+  List<Uint8List> _generatedImages = [];
 
   @override
   void dispose() {
@@ -296,6 +299,11 @@ class _CreatePageState extends State<CreatePage> {
               ),
             ],
           ),
+          
+          const SizedBox(height: 20),
+          
+          // Model Seçimi
+          _buildModelSelector(),
           
           const SizedBox(height: 20),
           
@@ -689,35 +697,69 @@ class _CreatePageState extends State<CreatePage> {
     });
 
     try {
-      // OpenAI API ile görsel oluştur
-      final imageData = await _openAIService.generateImage(
-        prompt: _promptController.text.trim(),
-        style: _selectedStyle,
-      );
-
-      if (imageData != null) {
-        setState(() {
-          _generatedImage = imageData;
-        });
-
-        // Başarılı oluşturma mesajı
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Görsel başarıyla oluşturuldu!'),
-            backgroundColor: Colors.green,
-          ),
+      if (_selectedModel == 'OpenAI DALL-E 3') {
+        // OpenAI API ile görsel oluştur
+        final imageData = await _openAIService.generateImage(
+          prompt: _promptController.text.trim(),
+          style: _selectedStyle,
         );
 
-        // Görseli göster
-        _showGeneratedImage(imageData);
-      } else {
-        // Hata mesajı
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Görsel oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.'),
-            backgroundColor: Colors.red,
-          ),
+        if (imageData != null) {
+          setState(() {
+            _generatedImage = imageData;
+            _generatedImages = [imageData];
+          });
+
+          // Başarılı oluşturma mesajı
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Görsel başarıyla oluşturuldu!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+
+          // Görseli göster
+          _showGeneratedImage(imageData);
+        } else {
+          // Hata mesajı
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Görsel oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } else if (_selectedModel == 'Gemini 2.5 Flash') {
+        // Gemini API ile görsel oluştur
+        final images = await GeminiService.generateImages(
+          '${_selectedStyle} tarzında: ${_promptController.text.trim()}',
         );
+
+        if (images.isNotEmpty) {
+          setState(() {
+            _generatedImages = images;
+            _generatedImage = images.first;
+          });
+
+          // Başarılı oluşturma mesajı
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${images.length} görsel başarıyla oluşturuldu!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+
+          // Görselleri göster
+          _showGeneratedImages(images);
+        } else {
+          // Hata mesajı
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Görsel oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     } catch (e) {
       print('Image generation error: $e');
@@ -848,6 +890,100 @@ class _CreatePageState extends State<CreatePage> {
     );
   }
 
+  /// Çoklu görselleri göster
+  void _showGeneratedImages(List<Uint8List> images) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.9,
+          height: MediaQuery.of(context).size.height * 0.8,
+          decoration: BoxDecoration(
+            color: const Color(0xFF1A1A1A),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Column(
+            children: [
+              // Başlık
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Oluşturulan Görseller',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(Icons.close, color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
+              // Görseller
+              Expanded(
+                child: PageView.builder(
+                  itemCount: images.length,
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        children: [
+                          Expanded(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(15),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.3),
+                                    blurRadius: 10,
+                                    spreadRadius: 2,
+                                  ),
+                                ],
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(15),
+                                child: Image.memory(
+                                  images[index],
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          // Kaydet butonu
+                          ElevatedButton.icon(
+                            onPressed: () => _saveImage(images[index]),
+                            icon: const Icon(Icons.download),
+                            label: Text('Görsel ${index + 1} Kaydet'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 30,
+                                vertical: 15,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   /// Görseli kaydet
   Future<void> _saveImage(Uint8List imageData) async {
     try {
@@ -900,5 +1036,56 @@ class _CreatePageState extends State<CreatePage> {
         ),
       );
     }
+  }
+
+  /// Model seçici widget'ı
+  Widget _buildModelSelector() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'AI Modeli Seçin',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          decoration: BoxDecoration(
+            color: const Color(0xFF2D2D2D),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.withOpacity(0.3)),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: _selectedModel,
+              isExpanded: true,
+              dropdownColor: const Color(0xFF2D2D2D),
+              style: const TextStyle(color: Colors.white),
+              items: const [
+                DropdownMenuItem(
+                  value: 'OpenAI DALL-E 3',
+                  child: Text('OpenAI DALL-E 3 (Yüksek Kalite)'),
+                ),
+                DropdownMenuItem(
+                  value: 'Gemini 2.5 Flash',
+                  child: Text('Gemini 2.5 Flash (Hızlı & Çoklu)'),
+                ),
+              ],
+              onChanged: (String? newValue) {
+                if (newValue != null) {
+                  setState(() {
+                    _selectedModel = newValue;
+                  });
+                }
+              },
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }
