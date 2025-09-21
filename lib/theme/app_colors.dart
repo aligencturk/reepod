@@ -13,7 +13,7 @@ class AppColors {
   static const Color backgroundPrimary = Color(0xFF000000);
   static const Color backgroundSecondary = Color(0xFF1C1C1E);
   static const Color backgroundTertiary = Color(0xFF2C2C2E);
-  
+
   static const Color glassPrimary = Color(0x1AFFFFFF);
   static const Color glassSecondary = Color(0x0FFFFFFF);
   static const Color glassTertiary = Color(0x05FFFFFF);
@@ -43,37 +43,25 @@ class AppColors {
   static const LinearGradient primaryGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [
-      Color(0xFF667eea),
-      Color(0xFF764ba2),
-    ],
+    colors: [Color(0xFF667eea), Color(0xFF764ba2)],
   );
 
   static const LinearGradient secondaryGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [
-      Color(0xFFf093fb),
-      Color(0xFFf5576c),
-    ],
+    colors: [Color(0xFFf093fb), Color(0xFFf5576c)],
   );
 
   static const LinearGradient tertiaryGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [
-      Color(0xFF4facfe),
-      Color(0xFF00f2fe),
-    ],
+    colors: [Color(0xFF4facfe), Color(0xFF00f2fe)],
   );
 
   static const LinearGradient accentGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [
-      Color(0xFF43e97b),
-      Color(0xFF38f9d7),
-    ],
+    colors: [Color(0xFF43e97b), Color(0xFF38f9d7)],
   );
 
   // MARK: - Semantic Colors
@@ -88,7 +76,6 @@ class AppColors {
   static const Color interactiveDisabled = Color(0xFF3A3A3C);
 
   // MARK: - Social Media Colors
-  static const Color like = Color(0xFFFF6B6B);
   static const Color share = Color(0xFF4ECDC4);
   static const Color comment = Color(0xFF45B7D1);
 
@@ -102,7 +89,7 @@ class AppColors {
   static const Color loadingSecondary = Color(0xFF5AC8FA);
 
   // MARK: - Helper Methods
-  
+
   /// Renklerin opacity'sini ayarlar
   static Color withOpacity(Color color, double opacity) {
     return color.withOpacity(opacity);
@@ -124,7 +111,7 @@ class AppColors {
       tertiaryGradient,
       accentGradient,
     ];
-    
+
     final random = DateTime.now().millisecondsSinceEpoch % gradients.length;
     return gradients[random];
   }
@@ -132,10 +119,16 @@ class AppColors {
   /// Accent renklerinden rastgele renk seçer
   static Color getRandomAccentColor() {
     final colors = [
-      accent1, accent2, accent3, accent4,
-      accent5, accent6, accent7, accent8,
+      accent1,
+      accent2,
+      accent3,
+      accent4,
+      accent5,
+      accent6,
+      accent7,
+      accent8,
     ];
-    
+
     final random = DateTime.now().millisecondsSinceEpoch % colors.length;
     return colors[random];
   }
@@ -146,4 +139,3 @@ class AppColors {
     return luminance > 0.5 ? Colors.black : Colors.white;
   }
 }
-

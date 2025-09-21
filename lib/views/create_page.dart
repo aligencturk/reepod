@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import '../services/openai_service.dart';
 import '../services/gemini_service.dart';
 import '../services/image_save_service.dart';
+import '../utils/logger_util.dart';
 
 /// AI Foto Oluşturma Sayfası
 /// iOS tarzında modern ve şık tasarım
@@ -37,10 +38,7 @@ class _CreatePageState extends State<CreatePage> {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFF0F0F0F),
-            Color(0xFF1A1A1A),
-          ],
+          colors: [Color(0xFF0F0F0F), Color(0xFF1A1A1A)],
         ),
       ),
       child: SingleChildScrollView(
@@ -50,33 +48,33 @@ class _CreatePageState extends State<CreatePage> {
           children: [
             // Hero Section
             _buildHeroSection(),
-            
+
             const SizedBox(height: 40),
-            
+
             // Prompt girişi
             _buildPromptSection(),
-            
+
             const SizedBox(height: 24),
-            
+
             // Stil seçimi
             _buildStyleSection(),
-            
+
             const SizedBox(height: 32),
-            
+
             // Oluştur butonu
             _buildCreateButton(),
-            
+
             const SizedBox(height: 24),
-            
+
             // Son oluşturulan görsel
             if (_generatedImage != null) ...[
               _buildLastGeneratedImage(),
               const SizedBox(height: 24),
             ],
-            
+
             // Örnekler
             _buildExamplesSection(),
-            
+
             const SizedBox(height: 100), // Bottom nav için boşluk
           ],
         ),
@@ -93,10 +91,7 @@ class _CreatePageState extends State<CreatePage> {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF1A1A1A),
-            Color(0xFF2D2D2D),
-          ],
+          colors: [Color(0xFF1A1A1A), Color(0xFF2D2D2D)],
         ),
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
@@ -134,9 +129,9 @@ class _CreatePageState extends State<CreatePage> {
               color: Colors.white,
             ),
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Başlık
           const Text(
             'AI Foto Oluşturucu',
@@ -148,9 +143,9 @@ class _CreatePageState extends State<CreatePage> {
             ),
             textAlign: TextAlign.center,
           ),
-          
+
           const SizedBox(height: 12),
-          
+
           // Alt başlık
           const Text(
             'Yapay zeka ile hayal gücünüzü gerçeğe dönüştürün',
@@ -173,10 +168,7 @@ class _CreatePageState extends State<CreatePage> {
       decoration: BoxDecoration(
         color: const Color(0xFF1A1A1A),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Colors.grey.withOpacity(0.1),
-          width: 1,
-        ),
+        border: Border.all(color: Colors.grey.withOpacity(0.1), width: 1),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
@@ -197,11 +189,7 @@ class _CreatePageState extends State<CreatePage> {
                   color: Colors.red.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(
-                  Icons.edit,
-                  color: Colors.red,
-                  size: 20,
-                ),
+                child: const Icon(Icons.edit, color: Colors.red, size: 20),
               ),
               const SizedBox(width: 12),
               const Text(
@@ -214,17 +202,14 @@ class _CreatePageState extends State<CreatePage> {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 20),
-          
+
           Container(
             decoration: BoxDecoration(
               color: const Color(0xFF0F0F0F),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: Colors.grey.withOpacity(0.2),
-                width: 1,
-              ),
+              border: Border.all(color: Colors.grey.withOpacity(0.2), width: 1),
             ),
             child: TextField(
               controller: _promptController,
@@ -235,10 +220,7 @@ class _CreatePageState extends State<CreatePage> {
               ),
               decoration: InputDecoration(
                 hintText: 'Hayal gücünüzü yazın...',
-                hintStyle: TextStyle(
-                  color: Colors.grey[500],
-                  fontSize: 16,
-                ),
+                hintStyle: TextStyle(color: Colors.grey[500], fontSize: 16),
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.all(20),
               ),
@@ -258,10 +240,7 @@ class _CreatePageState extends State<CreatePage> {
       decoration: BoxDecoration(
         color: const Color(0xFF1A1A1A),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Colors.grey.withOpacity(0.1),
-          width: 1,
-        ),
+        border: Border.all(color: Colors.grey.withOpacity(0.1), width: 1),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
@@ -282,11 +261,7 @@ class _CreatePageState extends State<CreatePage> {
                   color: Colors.blue.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(
-                  Icons.palette,
-                  color: Colors.blue,
-                  size: 20,
-                ),
+                child: const Icon(Icons.palette, color: Colors.blue, size: 20),
               ),
               const SizedBox(width: 12),
               const Text(
@@ -299,14 +274,14 @@ class _CreatePageState extends State<CreatePage> {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 20),
-          
+
           // Model Seçimi
           _buildModelSelector(),
-          
+
           const SizedBox(height: 20),
-          
+
           Wrap(
             spacing: 12,
             runSpacing: 12,
@@ -337,10 +312,8 @@ class _CreatePageState extends State<CreatePage> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         decoration: BoxDecoration(
-          gradient: isSelected 
-              ? const LinearGradient(
-                  colors: [Colors.red, Color(0xFFE50914)],
-                )
+          gradient: isSelected
+              ? const LinearGradient(colors: [Colors.red, Color(0xFFE50914)])
               : null,
           color: isSelected ? null : const Color(0xFF2D2D2D),
           borderRadius: BorderRadius.circular(25),
@@ -348,14 +321,16 @@ class _CreatePageState extends State<CreatePage> {
             color: isSelected ? Colors.red : Colors.grey.withOpacity(0.3),
             width: 1,
           ),
-          boxShadow: isSelected ? [
-            BoxShadow(
-              color: Colors.red.withOpacity(0.3),
-              blurRadius: 8,
-              spreadRadius: 0,
-              offset: const Offset(0, 4),
-            ),
-          ] : null,
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: Colors.red.withOpacity(0.3),
+                    blurRadius: 8,
+                    spreadRadius: 0,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : null,
         ),
         child: Text(
           style,
@@ -375,13 +350,9 @@ class _CreatePageState extends State<CreatePage> {
       width: double.infinity,
       height: 60,
       decoration: BoxDecoration(
-        gradient: _isGenerating 
-            ? const LinearGradient(
-                colors: [Colors.grey, Color(0xFF666666)],
-              )
-            : const LinearGradient(
-                colors: [Colors.red, Color(0xFFE50914)],
-              ),
+        gradient: _isGenerating
+            ? const LinearGradient(colors: [Colors.grey, Color(0xFF666666)])
+            : const LinearGradient(colors: [Colors.red, Color(0xFFE50914)]),
         borderRadius: BorderRadius.circular(30),
         boxShadow: [
           BoxShadow(
@@ -396,9 +367,11 @@ class _CreatePageState extends State<CreatePage> {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(30),
-          onTap: _isGenerating ? null : () {
-            _createImage();
-          },
+          onTap: _isGenerating
+              ? null
+              : () {
+                  _createImage();
+                },
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 32),
             child: Row(
@@ -450,10 +423,7 @@ class _CreatePageState extends State<CreatePage> {
       decoration: BoxDecoration(
         color: const Color(0xFF1A1A1A),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Colors.grey.withOpacity(0.1),
-          width: 1,
-        ),
+        border: Border.all(color: Colors.grey.withOpacity(0.1), width: 1),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
@@ -491,30 +461,24 @@ class _CreatePageState extends State<CreatePage> {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 20),
-          
+
           Container(
             height: 200,
             width: double.infinity,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: Colors.grey.withOpacity(0.3),
-                width: 1,
-              ),
+              border: Border.all(color: Colors.grey.withOpacity(0.3), width: 1),
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: Image.memory(
-                _generatedImage!,
-                fit: BoxFit.cover,
-              ),
+              child: Image.memory(_generatedImage!, fit: BoxFit.cover),
             ),
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           Row(
             children: [
               Expanded(
@@ -560,10 +524,7 @@ class _CreatePageState extends State<CreatePage> {
       decoration: BoxDecoration(
         color: const Color(0xFF1A1A1A),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Colors.grey.withOpacity(0.1),
-          width: 1,
-        ),
+        border: Border.all(color: Colors.grey.withOpacity(0.1), width: 1),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
@@ -601,9 +562,9 @@ class _CreatePageState extends State<CreatePage> {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 20),
-          
+
           _buildExamplePrompts(),
         ],
       ),
@@ -622,61 +583,65 @@ class _CreatePageState extends State<CreatePage> {
     ];
 
     return Column(
-      children: examples.map((example) => Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(12),
-            onTap: () {
-              _promptController.text = example;
-            },
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFF2D2D2D),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: Colors.grey.withOpacity(0.2),
-                  width: 1,
-                ),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
+      children: examples
+          .map(
+            (example) => Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(12),
+                  onTap: () {
+                    _promptController.text = example;
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.yellow.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
-                      Icons.lightbulb_outline,
-                      color: Colors.yellow,
-                      size: 16,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      example,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w400,
+                      color: const Color(0xFF2D2D2D),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Colors.grey.withOpacity(0.2),
+                        width: 1,
                       ),
                     ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.yellow.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(
+                            Icons.lightbulb_outline,
+                            color: Colors.yellow,
+                            size: 16,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            example,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ),
+                        Icon(
+                          Icons.arrow_forward_ios,
+                          color: Colors.grey[400],
+                          size: 12,
+                        ),
+                      ],
+                    ),
                   ),
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    color: Colors.grey[400],
-                    size: 12,
-                  ),
-                ],
+                ),
               ),
             ),
-          ),
-        ),
-      )).toList(),
+          )
+          .toList(),
     );
   }
 
@@ -724,7 +689,9 @@ class _CreatePageState extends State<CreatePage> {
           // Hata mesajı
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Görsel oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.'),
+              content: Text(
+                'Görsel oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.',
+              ),
               backgroundColor: Colors.red,
             ),
           );
@@ -755,19 +722,18 @@ class _CreatePageState extends State<CreatePage> {
           // Hata mesajı
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Görsel oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.'),
+              content: Text(
+                'Görsel oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.',
+              ),
               backgroundColor: Colors.red,
             ),
           );
         }
       }
     } catch (e) {
-      print('Image generation error: $e');
+      LoggerUtil.error('Image generation error', e);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Hata: $e'),
-          backgroundColor: Colors.red,
-        ),
+        SnackBar(content: Text('Hata: $e'), backgroundColor: Colors.red),
       );
     } finally {
       setState(() {
@@ -815,15 +781,12 @@ class _CreatePageState extends State<CreatePage> {
                     ),
                     IconButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(
-                        Icons.close,
-                        color: Colors.white,
-                      ),
+                      icon: const Icon(Icons.close, color: Colors.white),
                     ),
                   ],
                 ),
               ),
-              
+
               // Görsel
               Expanded(
                 child: Container(
@@ -837,14 +800,11 @@ class _CreatePageState extends State<CreatePage> {
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
-                    child: Image.memory(
-                      imageData,
-                      fit: BoxFit.contain,
-                    ),
+                    child: Image.memory(imageData, fit: BoxFit.contain),
                   ),
                 ),
               ),
-              
+
               // Butonlar
               Container(
                 padding: const EdgeInsets.all(20),
@@ -991,9 +951,7 @@ class _CreatePageState extends State<CreatePage> {
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (context) => const Center(
-          child: CircularProgressIndicator(),
-        ),
+        builder: (context) => const Center(child: CircularProgressIndicator()),
       );
 
       // Görseli galeriye kaydet
@@ -1027,7 +985,7 @@ class _CreatePageState extends State<CreatePage> {
       if (Navigator.of(context).canPop()) {
         Navigator.of(context).pop();
       }
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Hata: $e'),

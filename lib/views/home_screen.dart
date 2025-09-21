@@ -7,6 +7,7 @@ import '../widgets/loading_widget.dart' hide ErrorWidget;
 import '../theme/app_colors.dart';
 import '../services/mock_data_service.dart';
 import 'create_page.dart';
+import 'profile_page.dart';
 
 /// Ana ekran - AI Image Generator & Social Media
 class HomeScreen extends StatefulWidget {
@@ -19,11 +20,11 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final ScrollController _scrollController = ScrollController();
   int _currentTabIndex = 0;
-  
+
   @override
   void initState() {
     super.initState();
-    
+
     // Kartları yükle
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<CardViewModel>().loadCards();
@@ -56,19 +57,17 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               // Netflix tarzı AppBar
               _buildNetflixAppBar(),
-              
+
               // Ana içerik - Netflix tarzı scroll view
-              Expanded(
-                child: _buildMainContent(),
-              ),
+              Expanded(child: _buildMainContent()),
             ],
           ),
         ),
       ),
-      
+
       // Bottom Navigation Bar
       bottomNavigationBar: _buildBottomNavBar(),
-      
+
       // Floating Action Button - Yeni kart oluştur
       floatingActionButton: _buildFloatingActionButton(),
     );
@@ -82,8 +81,8 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Row(
         children: [
           // Netflix tarzı logo
-                Text(
-                  'ReePod',
+          Text(
+            'ReePod',
             style: TextStyle(
               color: Colors.red,
               fontSize: 24,
@@ -91,11 +90,11 @@ class _HomeScreenState extends State<HomeScreen> {
               letterSpacing: 1.2,
             ),
           ),
-          
+
           const Spacer(),
-          
+
           const Spacer(),
-          
+
           // Arama ve bildirim ikonları
           Row(
             mainAxisSize: MainAxisSize.min,
@@ -107,18 +106,21 @@ class _HomeScreenState extends State<HomeScreen> {
                 constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
               ),
               IconButton(
-                icon: const Icon(Icons.notifications_outlined, color: Colors.white, size: 20),
+                icon: const Icon(
+                  Icons.notifications_outlined,
+                  color: Colors.white,
+                  size: 20,
+                ),
                 onPressed: () {},
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                ),
-              ],
+              ),
+            ],
           ),
         ],
       ),
     );
   }
-
 
   Widget _buildMainContent() {
     switch (_currentTabIndex) {
@@ -127,7 +129,7 @@ class _HomeScreenState extends State<HomeScreen> {
       case 1:
         return const CreatePage();
       case 2:
-        return const _NetflixProfileTab();
+        return const ProfilePage();
       default:
         return const _NetflixHomeTab();
     }
@@ -138,9 +140,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       decoration: const BoxDecoration(
         color: Color(0xFF0F0F0F),
-        border: Border(
-          top: BorderSide(color: Colors.grey, width: 0.5),
-        ),
+        border: Border(top: BorderSide(color: Colors.grey, width: 0.5)),
       ),
       child: BottomNavigationBar(
         backgroundColor: const Color(0xFF0F0F0F),
@@ -167,22 +167,19 @@ class _HomeScreenState extends State<HomeScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),
             activeIcon: Icon(Icons.person),
-            label: 'Profilim',
+            label: 'Eserlerim',
           ),
         ],
       ),
     );
   }
 
-
   /// Netflix tarzı floating action button
   Widget _buildFloatingActionButton() {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(30),
-        gradient: const LinearGradient(
-          colors: [Colors.red, Color(0xFFE50914)],
-        ),
+        gradient: const LinearGradient(colors: [Colors.red, Color(0xFFE50914)]),
         boxShadow: [
           BoxShadow(
             color: Colors.red.withOpacity(0.4),
@@ -198,11 +195,7 @@ class _HomeScreenState extends State<HomeScreen> {
         onPressed: () {
           _showCreateCardDialog();
         },
-        child: const Icon(
-          Icons.add,
-          color: Colors.white,
-          size: 28,
-        ),
+        child: const Icon(Icons.add, color: Colors.white, size: 28),
       ),
     );
   }
@@ -225,8 +218,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-
-
 /// Netflix tarzı ana sayfa tab'ı
 class _NetflixHomeTab extends StatefulWidget {
   const _NetflixHomeTab();
@@ -242,9 +233,7 @@ class _NetflixHomeTabState extends State<_NetflixHomeTab> {
       builder: (context, cardViewModel, child) {
         if (cardViewModel.isLoading && cardViewModel.cards.isEmpty) {
           return const Center(
-            child: LoadingWidget.large(
-              message: 'İçerik yükleniyor...',
-            ),
+            child: LoadingWidget.large(message: 'İçerik yükleniyor...'),
           );
         }
 
@@ -268,20 +257,51 @@ class _NetflixHomeTabState extends State<_NetflixHomeTab> {
         children: [
           // Hero Section - Netflix tarzı büyük kart
           _buildHeroSection(cardViewModel),
-          
+
           const SizedBox(height: 20),
-          
+
           // AI Foto Oluşturma Kategorileri
-          _buildCategorySection('🔥 Trending AI Art', MockDataService.getTrendingCards(), isHorizontal: true),
-          _buildCategorySection('🏔️ AI Maceracı', MockDataService.getCardsByCategory('AI Maceracı'), isHorizontal: true),
-          _buildCategorySection('✨ AI Fantastik', MockDataService.getCardsByCategory('AI Fantastik'), isHorizontal: true),
-          _buildCategorySection('👤 AI Portre', MockDataService.getCardsByCategory('AI Portre'), isHorizontal: true),
-          _buildCategorySection('🚀 AI Bilim Kurgu', MockDataService.getCardsByCategory('AI Bilim Kurgu'), isHorizontal: true),
-          _buildCategorySection('🎨 AI Sanat', MockDataService.getCardsByCategory('AI Sanat'), isHorizontal: true),
-          _buildCategorySection('🏗️ AI Mimari', MockDataService.getCardsByCategory('AI Mimari'), isHorizontal: true),
-          _buildCategorySection('⭐ Popüler AI Art', cardViewModel.getMostLikedCards(), isHorizontal: true),
-          _buildCategorySection('🆕 Yeni AI Eserleri', cardViewModel.getNewestCards(), isHorizontal: true),
-          
+          _buildCategorySection(
+            '🔥 Trending AI Art',
+            MockDataService.getTrendingCards(),
+            isHorizontal: true,
+          ),
+          _buildCategorySection(
+            '🏔️ AI Maceracı',
+            MockDataService.getCardsByCategory('AI Maceracı'),
+            isHorizontal: true,
+          ),
+          _buildCategorySection(
+            '✨ AI Fantastik',
+            MockDataService.getCardsByCategory('AI Fantastik'),
+            isHorizontal: true,
+          ),
+          _buildCategorySection(
+            '👤 AI Portre',
+            MockDataService.getCardsByCategory('AI Portre'),
+            isHorizontal: true,
+          ),
+          _buildCategorySection(
+            '🚀 AI Bilim Kurgu',
+            MockDataService.getCardsByCategory('AI Bilim Kurgu'),
+            isHorizontal: true,
+          ),
+          _buildCategorySection(
+            '🎨 AI Sanat',
+            MockDataService.getCardsByCategory('AI Sanat'),
+            isHorizontal: true,
+          ),
+          _buildCategorySection(
+            '🏗️ AI Mimari',
+            MockDataService.getCardsByCategory('AI Mimari'),
+            isHorizontal: true,
+          ),
+          _buildCategorySection(
+            '🆕 Yeni AI Eserleri',
+            cardViewModel.getNewestCards(),
+            isHorizontal: true,
+          ),
+
           const SizedBox(height: 100), // FAB için boşluk
         ],
       ),
@@ -291,14 +311,14 @@ class _NetflixHomeTabState extends State<_NetflixHomeTab> {
   Widget _buildHeroSection(CardViewModel cardViewModel) {
     // Mock verilerden featured kartı al
     final heroCard = MockDataService.getFeaturedCard();
-    
+
     if (heroCard == null) {
       return _buildEmptyHeroSection();
     }
     return Container(
       height: 400,
       width: double.infinity,
-            decoration: BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
@@ -320,13 +340,17 @@ class _NetflixHomeTabState extends State<_NetflixHomeTab> {
                 errorBuilder: (context, error, stackTrace) {
                   return Container(
                     color: Colors.grey[800],
-                    child: const Icon(Icons.image, size: 100, color: Colors.grey),
+                    child: const Icon(
+                      Icons.image,
+                      size: 100,
+                      color: Colors.grey,
+                    ),
                   );
                 },
               ),
             ),
           ),
-          
+
           // Gradient overlay
           Positioned.fill(
             child: Container(
@@ -334,15 +358,12 @@ class _NetflixHomeTabState extends State<_NetflixHomeTab> {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    Colors.black.withOpacity(0.8),
-                  ],
+                  colors: [Colors.transparent, Colors.black.withOpacity(0.8)],
                 ),
               ),
             ),
           ),
-          
+
           // İçerik
           Positioned(
             bottom: 40,
@@ -361,7 +382,10 @@ class _NetflixHomeTabState extends State<_NetflixHomeTab> {
                 ),
                 const SizedBox(height: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.red.withOpacity(0.8),
                     borderRadius: BorderRadius.circular(20),
@@ -387,7 +411,10 @@ class _NetflixHomeTabState extends State<_NetflixHomeTab> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -398,7 +425,10 @@ class _NetflixHomeTabState extends State<_NetflixHomeTab> {
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.white,
                         side: const BorderSide(color: Colors.white),
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
                       ),
                     ),
                   ],
@@ -422,16 +452,16 @@ class _NetflixHomeTabState extends State<_NetflixHomeTab> {
         borderRadius: BorderRadius.circular(8),
       ),
       child: Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
               padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
+              decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [Colors.red, Color(0xFFE50914)],
                 ),
-              shape: BoxShape.circle,
+                shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
                     color: Colors.red.withOpacity(0.3),
@@ -440,10 +470,10 @@ class _NetflixHomeTabState extends State<_NetflixHomeTab> {
                     offset: const Offset(0, 8),
                   ),
                 ],
-            ),
-            child: const Icon(
-              Icons.auto_awesome,
-              size: 60,
+              ),
+              child: const Icon(
+                Icons.auto_awesome,
+                size: 60,
                 color: Colors.white,
               ),
             ),
@@ -459,12 +489,9 @@ class _NetflixHomeTabState extends State<_NetflixHomeTab> {
             const SizedBox(height: 8),
             const Text(
               'Yapay zeka ile hayal gücünüzü gerçeğe dönüştürün',
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: 16,
+              style: TextStyle(color: Colors.grey, fontSize: 16),
+              textAlign: TextAlign.center,
             ),
-            textAlign: TextAlign.center,
-          ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: () {
@@ -475,7 +502,10 @@ class _NetflixHomeTabState extends State<_NetflixHomeTab> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 16,
+                ),
               ),
             ),
           ],
@@ -484,7 +514,11 @@ class _NetflixHomeTabState extends State<_NetflixHomeTab> {
     );
   }
 
-  Widget _buildCategorySection(String title, List<CardItem> cards, {required bool isHorizontal}) {
+  Widget _buildCategorySection(
+    String title,
+    List<CardItem> cards, {
+    required bool isHorizontal,
+  }) {
     if (cards.isEmpty) return const SizedBox.shrink();
 
     return Column(
@@ -498,9 +532,9 @@ class _NetflixHomeTabState extends State<_NetflixHomeTab> {
               color: Colors.white,
               fontSize: 20,
               fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
+            ),
+          ),
+        ),
         const SizedBox(height: 8),
         if (isHorizontal)
           _buildHorizontalCardList(cards)
@@ -531,9 +565,9 @@ class _NetflixHomeTabState extends State<_NetflixHomeTab> {
   }
 
   Widget _buildVerticalCardGrid(List<CardItem> cards) {
-        return Padding(
+    return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: GridView.builder(
+      child: GridView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -541,14 +575,14 @@ class _NetflixHomeTabState extends State<_NetflixHomeTab> {
           childAspectRatio: 0.7,
           crossAxisSpacing: 12,
           mainAxisSpacing: 12,
-              ),
-              itemCount: cards.length,
-              itemBuilder: (context, index) {
-                final card = cards[index];
+        ),
+        itemCount: cards.length,
+        itemBuilder: (context, index) {
+          final card = cards[index];
           return _buildNetflixCard(card);
-              },
-          ),
-        );
+        },
+      ),
+    );
   }
 
   /// Yeni kart oluşturma dialog'unu gösterir
@@ -568,10 +602,87 @@ class _NetflixHomeTabState extends State<_NetflixHomeTab> {
     );
   }
 
+  /// Kart detay dialog'unu gösterir - Flip animasyonu ile
+  void _showCardDetailDialog(BuildContext context, CardItem card) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(20),
+        child: Container(
+          width: 360,
+          height: 560,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.4),
+                blurRadius: 25,
+                spreadRadius: 0,
+                offset: const Offset(0, 12),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: Stack(
+              children: [
+                // FlipCard widget'ı
+                Positioned.fill(
+                  child: FlipCard(
+                    card: card,
+                    startFlipped: false, // Ön yüzle başla
+                    width: 360,
+                    height: 560,
+                  ),
+                ),
+
+                // Kapatma butonu
+                Positioned(
+                  top: 16,
+                  right: 16,
+                  child: GestureDetector(
+                    onTap: () => Navigator.of(context).pop(),
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.8),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.4),
+                          width: 1.5,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.3),
+                            blurRadius: 8,
+                            spreadRadius: 0,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.close,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildNetflixCard(CardItem card) {
     return GestureDetector(
       onTap: () {
-        // Kart detayına git
+        _showCardDetailDialog(context, card);
       },
       child: Container(
         decoration: BoxDecoration(
@@ -587,7 +698,7 @@ class _NetflixHomeTabState extends State<_NetflixHomeTab> {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(8),
           child: Stack(
-      children: [
+            children: [
               // Görsel
               Positioned.fill(
                 child: Image.network(
@@ -601,7 +712,7 @@ class _NetflixHomeTabState extends State<_NetflixHomeTab> {
                   },
                 ),
               ),
-              
+
               // Gradient overlay
               Positioned.fill(
                 child: Container(
@@ -617,13 +728,16 @@ class _NetflixHomeTabState extends State<_NetflixHomeTab> {
                   ),
                 ),
               ),
-              
+
               // AI Badge
               Positioned(
                 top: 8,
                 left: 8,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.red.withOpacity(0.9),
                     borderRadius: BorderRadius.circular(12),
@@ -638,7 +752,7 @@ class _NetflixHomeTabState extends State<_NetflixHomeTab> {
                   ),
                 ),
               ),
-              
+
               // Başlık
               Positioned(
                 bottom: 8,
@@ -661,9 +775,7 @@ class _NetflixHomeTabState extends State<_NetflixHomeTab> {
       ),
     );
   }
-
 }
-
 
 /// Netflix tarzı popüler tab'ı
 // ignore: unused_element
@@ -674,21 +786,17 @@ class _NetflixPopularTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<CardViewModel>(
       builder: (context, cardViewModel, child) {
-        final popularCards = cardViewModel.getMostLikedCards();
-        
+        final popularCards = cardViewModel.cards;
+
         if (popularCards.isEmpty) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(
-                  Icons.trending_up,
-                  size: 80,
-                  color: Colors.grey,
-                ),
-                
+                const Icon(Icons.trending_up, size: 80, color: Colors.grey),
+
                 const SizedBox(height: 24),
-                
+
                 const Text(
                   'Henüz popüler içerik yok',
                   style: TextStyle(
@@ -697,15 +805,12 @@ class _NetflixPopularTab extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                
+
                 const SizedBox(height: 12),
-                
+
                 const Text(
-                  'İlk beğenileri toplayarak\npopüler listesine gir!',
-                  style: TextStyle(
-                    color: Colors.grey,
-                    fontSize: 16,
-                  ),
+                  'Henüz içerik yok',
+                  style: TextStyle(color: Colors.grey, fontSize: 16),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -735,10 +840,10 @@ class _NetflixPopularTab extends StatelessWidget {
               ),
             ),
           ),
-          
+
           // Popüler kartlar listesi
           _buildPopularCardsList(popularCards),
-          
+
           const SizedBox(height: 100), // FAB için boşluk
         ],
       ),
@@ -775,38 +880,36 @@ class _NetflixPopularTab extends StatelessWidget {
           ),
         ],
       ),
-          child: Row(
-            children: [
-              // Sıra numarası
-              Container(
+      child: Row(
+        children: [
+          // Sıra numarası
+          Container(
             width: 60,
             height: 120,
-                decoration: BoxDecoration(
+            decoration: BoxDecoration(
               color: rank <= 3 ? Colors.red : Colors.grey[800],
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(12),
                 bottomLeft: Radius.circular(12),
               ),
-                ),
-                child: Center(
-                  child: Text(
+            ),
+            child: Center(
+              child: Text(
                 '$rank',
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                    ),
-                  ),
                 ),
               ),
-              
+            ),
+          ),
+
           // Kart görseli
           Container(
             width: 100,
             height: 120,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-            ),
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: Stack(
@@ -828,7 +931,10 @@ class _NetflixPopularTab extends StatelessWidget {
                     top: 4,
                     right: 4,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.red,
                         borderRadius: BorderRadius.circular(8),
@@ -847,11 +953,11 @@ class _NetflixPopularTab extends StatelessWidget {
               ),
             ),
           ),
-          
+
           const SizedBox(width: 16),
-          
+
           // Kart bilgileri
-              Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
@@ -866,408 +972,20 @@ class _NetflixPopularTab extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
-                
+
                 const SizedBox(height: 4),
-                
+
                 Text(
                   'Stil: ${card.style}',
-                  style: const TextStyle(
-                    color: Colors.grey,
-                    fontSize: 14,
-                  ),
+                  style: const TextStyle(color: Colors.grey, fontSize: 14),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
-                
-                const SizedBox(height: 8),
-                
-                Row(
-                  children: [
-                    const Icon(Icons.favorite, color: Colors.red, size: 16),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${card.likes}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    const Icon(Icons.comment, color: Colors.blue, size: 16),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${card.comments.length}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
               ],
             ),
-              ),
-            ],
-          ),
-    );
-  }
-
-}
-
-/// Netflix tarzı profil tab'ı
-class _NetflixProfileTab extends StatelessWidget {
-  const _NetflixProfileTab();
-
-  @override
-  Widget build(BuildContext context) {
-    return Consumer<CardViewModel>(
-      builder: (context, cardViewModel, child) {
-        return SingleChildScrollView(
-          child: Column(
-            children: [
-              // Netflix tarzı profil header
-              _buildNetflixProfileHeader(cardViewModel),
-              
-              const SizedBox(height: 24),
-              
-              // İstatistikler
-              _buildNetflixStatsSection(cardViewModel),
-              
-              const SizedBox(height: 24),
-              
-              // Ayarlar menüsü
-              _buildNetflixSettingsSection(context, cardViewModel),
-              
-              const SizedBox(height: 100), // FAB için boşluk
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildNetflixProfileHeader(CardViewModel cardViewModel) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        colors: [
-            Color(0xFF1A1A1A),
-            Color(0xFF0F0F0F),
-        ],
-      ),
-      ),
-      child: Column(
-          children: [
-            // Avatar
-            Container(
-            width: 120,
-            height: 120,
-              decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Colors.red, Color(0xFFE50914)],
-              ),
-                shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.red.withOpacity(0.3),
-                  blurRadius: 20,
-                  spreadRadius: 0,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-              ),
-              child: const Icon(
-                Icons.person,
-              size: 60,
-              color: Colors.white,
-            ),
-          ),
-          
-          const SizedBox(height: 16),
-          
-          // Kullanıcı adı
-          const Text(
-                    'AI Sanatçısı',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          
-          const SizedBox(height: 8),
-          
-          // Kullanıcı durumu
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Colors.red, Color(0xFFE50914)],
-              ),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const Text(
-              '🤖 AI Foto Oluşturucu',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          
-          const SizedBox(height: 16),
-          
-          // İstatistik özeti
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _buildQuickStat('AI Eserleri', '${cardViewModel.cardCount}'),
-              _buildQuickStat('Beğeniler', '${cardViewModel.totalLikes}'),
-              _buildQuickStat('Yorumlar', '${cardViewModel.totalComments}'),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQuickStat(String label, String value) {
-    return Column(
-      children: [
-        Text(
-          value,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        Text(
-          label,
-          style: const TextStyle(
-            color: Colors.grey,
-            fontSize: 14,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildNetflixStatsSection(CardViewModel cardViewModel) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-          const Text(
-            '🤖 AI İstatistikleri',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          
-          const SizedBox(height: 16),
-          
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.grey[900],
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              children: [
-                _buildStatRow('AI Eserleri', '${cardViewModel.cardCount}', Icons.auto_awesome, Colors.blue),
-                const Divider(color: Colors.grey),
-                _buildStatRow('Toplam Beğeni', '${cardViewModel.totalLikes}', Icons.favorite, Colors.red),
-                const Divider(color: Colors.grey),
-                _buildStatRow('Toplam Yorum', '${cardViewModel.totalComments}', Icons.comment, Colors.green),
-                const Divider(color: Colors.grey),
-                _buildStatRow('Ortalama Beğeni', '${cardViewModel.cardCount > 0 ? (cardViewModel.totalLikes / cardViewModel.cardCount).toStringAsFixed(1) : '0'}', Icons.trending_up, Colors.orange),
-              ],
-                  ),
-                ),
-              ],
-      ),
-    );
-  }
-
-  Widget _buildStatRow(String label, String value, IconData icon, Color color) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-      children: [
-          Icon(icon, color: color, size: 24),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Text(
-              label,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-              ),
-            ),
-          ),
-        Text(
-          value,
-            style: TextStyle(
-            color: color,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-          ),
-        ),
-      ],
-      ),
-    );
-  }
-
-  Widget _buildNetflixSettingsSection(BuildContext context, CardViewModel cardViewModel) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            '⚙️ AI Ayarları',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          
-          const SizedBox(height: 16),
-          
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.grey[900],
-              borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        children: [
-                _buildSettingsItem(
-                  icon: Icons.auto_awesome,
-                  title: 'AI Eserlerini Yenile',
-                  subtitle: 'Tüm AI eserlerini yeniden yükle',
-            onTap: () => cardViewModel.refreshCards(),
-          ),
-                const Divider(color: Colors.grey, height: 1),
-                _buildSettingsItem(
-                  icon: Icons.clear_all,
-                  title: 'Tüm AI Eserlerini Temizle',
-                  subtitle: 'Tüm AI verilerini kalıcı olarak sil',
-            onTap: () => _showClearConfirmation(context, cardViewModel),
-                  isDestructive: true,
-                ),
-                const Divider(color: Colors.grey, height: 1),
-                _buildSettingsItem(
-                  icon: Icons.info_outline,
-                  title: 'AI Foto Oluşturucu Hakkında',
-                  subtitle: 'Versiyon ve AI bilgileri',
-            onTap: () => _showAboutDialog(context),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSettingsItem({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required VoidCallback onTap,
-    bool isDestructive = false,
-  }) {
-    return ListTile(
-      leading: Icon(
-        icon,
-        color: isDestructive ? Colors.red : Colors.white,
-        size: 24,
-      ),
-      title: Text(
-        title,
-        style: TextStyle(
-          color: isDestructive ? Colors.red : Colors.white,
-          fontSize: 16,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-      subtitle: Text(
-        subtitle,
-        style: const TextStyle(
-          color: Colors.grey,
-          fontSize: 14,
-        ),
-      ),
-      trailing: const Icon(
-        Icons.arrow_forward_ios,
-        color: Colors.grey,
-        size: 16,
-      ),
-      onTap: onTap,
-    );
-  }
-
-
-  void _showClearConfirmation(BuildContext context, CardViewModel cardViewModel) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Tüm Kartları Temizle'),
-        content: const Text(
-          'Bu işlem tüm kartlarınızı ve yorumları kalıcı olarak silecek. Devam etmek istediğinizden emin misiniz?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('İptal'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              cardViewModel.clearAllCards();
-              Navigator.pop(context);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.error,
-            ),
-            child: const Text('Temizle'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showAboutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('🤖 AI Foto Oluşturucu'),
-        content: const Text(
-          'ReePod - AI Image Generator & Social Media\n\n'
-          'Yapay zeka teknolojisiyle hayal gücünüzü gerçeğe dönüştürün. '
-          'AI ile muhteşem görseller oluşturun ve sosyal medyada paylaşın.\n\n'
-          '✨ AI Destekli Foto Oluşturma\n'
-          '🎨 Çoklu Sanat Stili\n'
-          '📱 Sosyal Medya Entegrasyonu\n\n'
-          'Versiyon: 1.0.0',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Tamam'),
           ),
         ],
       ),
     );
   }
 }
-

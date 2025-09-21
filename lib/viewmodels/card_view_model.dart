@@ -1,9 +1,9 @@
 import 'package:uuid/uuid.dart';
 import '../models/card_item.dart';
-import '../models/comment.dart';
 import '../services/cache_service.dart';
 import '../services/image_gen_service.dart';
 import '../services/mock_data_service.dart';
+import '../utils/logger_util.dart';
 import 'base_view_model.dart';
 
 /// Kart işlemlerini yöneten ViewModel sınıfı
@@ -22,13 +22,13 @@ class CardViewModel extends BaseViewModel {
     await safeExecute(() async {
       // Önce cache'den yükle
       final cachedCards = await CacheService.getCards();
-      
+
       // Eğer cache'de veri yoksa mock verileri yükle
       if (cachedCards.isEmpty) {
         final mockCards = MockDataService.getAllCards();
         _cards.clear();
         _cards.addAll(mockCards);
-        
+
         // Mock verileri cache'e kaydet
         for (final card in mockCards) {
           await CacheService.addCard(card);
@@ -77,85 +77,11 @@ class CardViewModel extends BaseViewModel {
       // Cache'e kaydet
       final cacheSaved = await CacheService.addCard(newCard);
       if (!cacheSaved) {
-        print('Kart cache\'e kaydedilemedi');
+        LoggerUtil.warning('Kart cache\'e kaydedilemedi');
       }
 
       return true;
     }, errorPrefix: 'Kart oluşturulurken hata');
-
-    return result ?? false;
-  }
-
-  /// Bir kartı beğenir/beğenmez
-  Future<bool> toggleLike(String cardId) async {
-    final result = await safeExecute(() async {
-      final cardIndex = _cards.indexWhere((card) => card.id == cardId);
-      if (cardIndex == -1) {
-        throw Exception('Kart bulunamadı');
-      }
-
-      final card = _cards[cardIndex];
-      final newLikeCount = card.isLiked ? card.likes - 1 : card.likes + 1;
-      
-      final updatedCard = card.copyWith(
-        isLiked: !card.isLiked,
-        likes: newLikeCount,
-      );
-
-      _cards[cardIndex] = updatedCard;
-
-      // Cache'i güncelle
-      await CacheService.updateCard(updatedCard);
-
-      return true;
-    }, errorPrefix: 'Beğeni işlemi sırasında hata', showLoading: false);
-
-    return result ?? false;
-  }
-
-  /// Bir karta yorum ekler
-  Future<bool> addComment({
-    required String cardId,
-    required String content,
-    required String authorName,
-  }) async {
-    if (content.trim().isEmpty) {
-      setError('Yorum metni boş olamaz');
-      return false;
-    }
-
-    if (authorName.trim().isEmpty) {
-      setError('Yazar adı belirtilmelidir');
-      return false;
-    }
-
-    final result = await safeExecute(() async {
-      final cardIndex = _cards.indexWhere((card) => card.id == cardId);
-      if (cardIndex == -1) {
-        throw Exception('Kart bulunamadı');
-      }
-
-      final card = _cards[cardIndex];
-      
-      // Yeni yorum oluştur
-      final newComment = Comment(
-        id: _uuid.v4(),
-        authorName: authorName,
-        content: content,
-        createdAt: DateTime.now(),
-      );
-
-      // Yorumu karta ekle
-      final updatedComments = [...card.comments, newComment];
-      final updatedCard = card.copyWith(comments: updatedComments);
-
-      _cards[cardIndex] = updatedCard;
-
-      // Cache'i güncelle
-      await CacheService.updateCard(updatedCard);
-
-      return true;
-    }, errorPrefix: 'Yorum eklenirken hata');
 
     return result ?? false;
   }
@@ -197,20 +123,13 @@ class CardViewModel extends BaseViewModel {
     final lowercaseQuery = query.toLowerCase();
     return _cards.where((card) {
       return card.prompt.toLowerCase().contains(lowercaseQuery) ||
-             card.style.toLowerCase().contains(lowercaseQuery);
+          card.style.toLowerCase().contains(lowercaseQuery);
     }).toList();
   }
 
   /// Kartları stil göre filtreler
   List<CardItem> getCardsByStyle(String style) {
     return _cards.where((card) => card.style == style).toList();
-  }
-
-  /// En çok beğenilen kartları döndürür
-  List<CardItem> getMostLikedCards({int limit = 10}) {
-    final sortedCards = List<CardItem>.from(_cards);
-    sortedCards.sort((a, b) => b.likes.compareTo(a.likes));
-    return sortedCards.take(limit).toList();
   }
 
   /// En yeni kartları döndürür
@@ -249,20 +168,11 @@ class CardViewModel extends BaseViewModel {
     return stats;
   }
 
-  /// Toplam beğeni sayısını döndürür
-  int get totalLikes => _cards.fold(0, (total, card) => total + card.likes);
-
-  /// Toplam yorum sayısını döndürür
-  int get totalComments => _cards.fold(0, (total, card) => total + card.comments.length);
-
   /// En popüler stili döndürür
   String? get mostPopularStyle {
     final stats = getStyleStatistics();
     if (stats.isEmpty) return null;
-    
-    return stats.entries
-        .reduce((a, b) => a.value > b.value ? a : b)
-        .key;
+
+    return stats.entries.reduce((a, b) => a.value > b.value ? a : b).key;
   }
 }
-

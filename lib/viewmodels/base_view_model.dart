@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import '../utils/logger_util.dart';
 
 /// Tüm ViewModeller için temel sınıf
 /// Loading, error ve success durumlarını yönetir
@@ -19,7 +20,7 @@ abstract class BaseViewModel extends ChangeNotifier {
   /// Loading durumunu ayarlar
   void setLoading(bool loading) {
     if (_isDisposed) return;
-    
+
     _isLoading = loading;
     notifyListeners();
   }
@@ -27,7 +28,7 @@ abstract class BaseViewModel extends ChangeNotifier {
   /// Error mesajını ayarlar
   void setError(String? error) {
     if (_isDisposed) return;
-    
+
     _errorMessage = error;
     notifyListeners();
   }
@@ -35,7 +36,7 @@ abstract class BaseViewModel extends ChangeNotifier {
   /// Error'u temizler
   void clearError() {
     if (_isDisposed) return;
-    
+
     _errorMessage = null;
     notifyListeners();
   }
@@ -43,7 +44,7 @@ abstract class BaseViewModel extends ChangeNotifier {
   /// Loading ve error durumlarını temizler
   void clearState() {
     if (_isDisposed) return;
-    
+
     _isLoading = false;
     _errorMessage = null;
     notifyListeners();
@@ -51,7 +52,8 @@ abstract class BaseViewModel extends ChangeNotifier {
 
   /// Asenkron işlemleri güvenli şekilde çalıştırır
   /// Loading durumunu otomatik yönetir ve hataları yakalar
-  Future<T?> safeExecute<T>(Future<T> Function() operation, {
+  Future<T?> safeExecute<T>(
+    Future<T> Function() operation, {
     String? errorPrefix,
     bool showLoading = true,
   }) async {
@@ -64,29 +66,28 @@ abstract class BaseViewModel extends ChangeNotifier {
       clearError();
 
       final result = await operation();
-      
+
       if (showLoading) {
         setLoading(false);
       }
-      
+
       return result;
     } catch (e, stackTrace) {
       if (showLoading) {
         setLoading(false);
       }
-      
-      String errorMsg = errorPrefix != null 
+
+      String errorMsg = errorPrefix != null
           ? '$errorPrefix: ${e.toString()}'
           : e.toString();
-          
+
       setError(errorMsg);
-      
+
       // Debug modda stack trace'i yazdır
       if (kDebugMode) {
-        print('BaseViewModel Error: $errorMsg');
-        print('StackTrace: $stackTrace');
+        LoggerUtil.error('BaseViewModel Error: $errorMsg', null, stackTrace);
       }
-      
+
       return null;
     }
   }
@@ -101,7 +102,7 @@ abstract class BaseViewModel extends ChangeNotifier {
   /// Belirtilen süre sonra error mesajını otomatik temizler
   void clearErrorAfterDelay([Duration delay = const Duration(seconds: 5)]) {
     if (_isDisposed || !hasError) return;
-    
+
     Future.delayed(delay, () {
       if (!_isDisposed) {
         clearError();
@@ -150,10 +151,10 @@ abstract class BaseViewModel extends ChangeNotifier {
 enum ViewState {
   /// Yükleniyor durumu
   loading,
-  
+
   /// Hata durumu
   error,
-  
+
   /// Başarılı durum
   success,
 }
@@ -162,11 +163,10 @@ enum ViewState {
 extension ViewStateExtension on ViewState {
   /// Loading durumunda mı?
   bool get isLoading => this == ViewState.loading;
-  
+
   /// Error durumunda mı?
   bool get isError => this == ViewState.error;
-  
+
   /// Success durumunda mı?
   bool get isSuccess => this == ViewState.success;
 }
-

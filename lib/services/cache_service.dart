@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/card_item.dart';
+import '../utils/logger_util.dart';
 
 /// Lokal cache işlemlerini yöneten servis sınıfı
 class CacheService {
@@ -19,15 +20,15 @@ class CacheService {
       final prefs = await _prefs;
       final cardsJson = cards.map((card) => card.toJson()).toList();
       final cardsString = json.encode(cardsJson);
-      
+
       final success = await prefs.setString(_cardsKey, cardsString);
       if (success) {
         await _updateLastCacheTime();
       }
-      
+
       return success;
     } catch (e) {
-      print('Kartlar kaydedilirken hata oluştu: $e');
+      LoggerUtil.error('Kartlar kaydedilirken hata oluştu', e);
       return false;
     }
   }
@@ -37,19 +38,21 @@ class CacheService {
     try {
       final prefs = await _prefs;
       final cardsString = prefs.getString(_cardsKey);
-      
+
       if (cardsString == null) {
         return [];
       }
 
       final cardsJson = json.decode(cardsString) as List<dynamic>;
       final cards = cardsJson
-          .map((cardJson) => CardItem.fromJson(cardJson as Map<String, dynamic>))
+          .map(
+            (cardJson) => CardItem.fromJson(cardJson as Map<String, dynamic>),
+          )
           .toList();
-      
+
       return cards;
     } catch (e) {
-      print('Kartlar yüklenirken hata oluştu: $e');
+      LoggerUtil.error('Kartlar yüklenirken hata oluştu', e);
       return [];
     }
   }
@@ -59,15 +62,15 @@ class CacheService {
     try {
       final cards = await getCards();
       cards.insert(0, card); // Yeni kartı en başa ekle
-      
+
       // Maximum 50 kart tutulması için sınırlama
       if (cards.length > 50) {
         cards.removeRange(50, cards.length);
       }
-      
+
       return await saveCards(cards);
     } catch (e) {
-      print('Kart eklenirken hata oluştu: $e');
+      LoggerUtil.error('Kart eklenirken hata oluştu', e);
       return false;
     }
   }
@@ -77,15 +80,15 @@ class CacheService {
     try {
       final cards = await getCards();
       final cardIndex = cards.indexWhere((card) => card.id == updatedCard.id);
-      
+
       if (cardIndex != -1) {
         cards[cardIndex] = updatedCard;
         return await saveCards(cards);
       }
-      
+
       return false;
     } catch (e) {
-      print('Kart güncellenirken hata oluştu: $e');
+      LoggerUtil.error('Kart güncellenirken hata oluştu', e);
       return false;
     }
   }
@@ -97,7 +100,7 @@ class CacheService {
       cards.removeWhere((card) => card.id == cardId);
       return await saveCards(cards);
     } catch (e) {
-      print('Kart silinirken hata oluştu: $e');
+      LoggerUtil.error('Kart silinirken hata oluştu', e);
       return false;
     }
   }
@@ -108,19 +111,21 @@ class CacheService {
       final prefs = await _prefs;
       return await prefs.remove(_cardsKey);
     } catch (e) {
-      print('Cache temizlenirken hata oluştu: $e');
+      LoggerUtil.error('Cache temizlenirken hata oluştu', e);
       return false;
     }
   }
 
   /// Kullanıcı tercihlerini kaydeder
-  static Future<bool> saveUserPreferences(Map<String, dynamic> preferences) async {
+  static Future<bool> saveUserPreferences(
+    Map<String, dynamic> preferences,
+  ) async {
     try {
       final prefs = await _prefs;
       final preferencesString = json.encode(preferences);
       return await prefs.setString(_userPrefsKey, preferencesString);
     } catch (e) {
-      print('Kullanıcı tercihleri kaydedilirken hata oluştu: $e');
+      LoggerUtil.error('Kullanıcı tercihleri kaydedilirken hata oluştu', e);
       return false;
     }
   }
@@ -130,14 +135,14 @@ class CacheService {
     try {
       final prefs = await _prefs;
       final preferencesString = prefs.getString(_userPrefsKey);
-      
+
       if (preferencesString == null) {
         return <String, dynamic>{};
       }
 
       return json.decode(preferencesString) as Map<String, dynamic>;
     } catch (e) {
-      print('Kullanıcı tercihleri yüklenirken hata oluştu: $e');
+      LoggerUtil.error('Kullanıcı tercihleri yüklenirken hata oluştu', e);
       return <String, dynamic>{};
     }
   }
@@ -149,7 +154,7 @@ class CacheService {
       final now = DateTime.now().millisecondsSinceEpoch;
       await prefs.setInt(_lastUpdateKey, now);
     } catch (e) {
-      print('Son güncelleme zamanı kaydedilirken hata oluştu: $e');
+      LoggerUtil.error('Son güncelleme zamanı kaydedilirken hata oluştu', e);
     }
   }
 
@@ -158,26 +163,28 @@ class CacheService {
     try {
       final prefs = await _prefs;
       final timestamp = prefs.getInt(_lastUpdateKey);
-      
+
       if (timestamp == null) {
         return null;
       }
-      
+
       return DateTime.fromMillisecondsSinceEpoch(timestamp);
     } catch (e) {
-      print('Son güncelleme zamanı alınırken hata oluştu: $e');
+      LoggerUtil.error('Son güncelleme zamanı alınırken hata oluştu', e);
       return null;
     }
   }
 
   /// Cache'in geçerli olup olmadığını kontrol eder
-  static Future<bool> isCacheValid({Duration maxAge = const Duration(hours: 24)}) async {
+  static Future<bool> isCacheValid({
+    Duration maxAge = const Duration(hours: 24),
+  }) async {
     final lastUpdate = await getLastCacheTime();
-    
+
     if (lastUpdate == null) {
       return false;
     }
-    
+
     return DateTime.now().difference(lastUpdate) < maxAge;
   }
 
@@ -187,10 +194,10 @@ class CacheService {
       final prefs = await _prefs;
       final cardsString = prefs.getString(_cardsKey) ?? '';
       final preferencesString = prefs.getString(_userPrefsKey) ?? '';
-      
+
       return cardsString.length + preferencesString.length;
     } catch (e) {
-      print('Cache boyutu hesaplanırken hata oluştu: $e');
+      LoggerUtil.error('Cache boyutu hesaplanırken hata oluştu', e);
       return 0;
     }
   }
@@ -199,7 +206,7 @@ class CacheService {
   static Future<bool> setValue<T>(String key, T value) async {
     try {
       final prefs = await _prefs;
-      
+
       if (value is String) {
         return await prefs.setString(key, value);
       } else if (value is int) {
@@ -215,7 +222,7 @@ class CacheService {
         return await prefs.setString(key, json.encode(value));
       }
     } catch (e) {
-      print('Değer kaydedilirken hata oluştu: $e');
+      LoggerUtil.error('Değer kaydedilirken hata oluştu', e);
       return false;
     }
   }
@@ -226,9 +233,8 @@ class CacheService {
       final prefs = await _prefs;
       return prefs.get(key) as T?;
     } catch (e) {
-      print('Değer alınırken hata oluştu: $e');
+      LoggerUtil.error('Değer alınırken hata oluştu', e);
       return null;
     }
   }
 }
-
