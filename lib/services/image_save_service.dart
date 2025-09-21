@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
-import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:gal/gal.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:logger/logger.dart';
@@ -31,21 +31,19 @@ class ImageSaveService {
       _logger.i('Saving image to gallery: $name');
       _logger.i('Image size: ${imageData.length} bytes');
 
-      // Görseli kaydet
-      final result = await ImageGallerySaver.saveImage(
-        imageData,
-        name: name,
-        quality: 100,
-      );
+      // Geçici dosya oluştur
+      final tempDir = await getTemporaryDirectory();
+      final tempFile = File('${tempDir.path}/$name');
+      await tempFile.writeAsBytes(imageData);
 
-      if (result['isSuccess'] == true) {
-        _logger.i('Image saved successfully to gallery');
-        _logger.i('Saved path: ${result['filePath']}');
-        return true;
-      } else {
-        _logger.e('Failed to save image to gallery: ${result['errorMessage']}');
-        return false;
-      }
+      // Galeriye kaydet
+      await Gal.putImage(tempFile.path);
+      
+      // Geçici dosyayı sil
+      await tempFile.delete();
+
+      _logger.i('Image saved successfully to gallery');
+      return true;
     } catch (e) {
       _logger.e('Error saving image to gallery: $e');
       return false;
@@ -91,14 +89,14 @@ class ImageSaveService {
   /// Depolama izni iste
   Future<bool> _requestStoragePermission() async {
     try {
-      // Android için storage permission
+      // Android 13+ için photos permission
       if (Platform.isAndroid) {
-        final status = await Permission.storage.request();
+        final status = await Permission.photos.request();
         if (status.isGranted) {
-          _logger.i('Storage permission granted');
+          _logger.i('Photos permission granted');
           return true;
         } else {
-          _logger.w('Storage permission denied: $status');
+          _logger.w('Photos permission denied: $status');
           return false;
         }
       }

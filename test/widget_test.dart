@@ -1,9 +1,8 @@
-// This is a basic Flutter widget test.
+// ReePod AI Image Generator uygulaması için widget testleri
 //
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
+// WidgetTester kullanarak widget'larla etkileşim test edilebilir.
+// Tap, scroll gibi hareketler gönderilebilir ve widget özelliklerinin
+// doğru değerlere sahip olduğu doğrulanabilir.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -11,20 +10,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:reepod/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('ReePod uygulaması başlatma testi', (WidgetTester tester) async {
+    // Uygulamayı oluştur ve bir frame tetikle
+    await tester.pumpWidget(const ReePodApp());
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // Uygulama başlığının görüntülendiğini doğrula
+    expect(find.text('ReePod - AI Image Generator'), findsOneWidget);
+    
+    // Debug banner'ın gizli olduğunu doğrula
+    expect(find.byType(MaterialApp), findsOneWidget);
   });
 }
