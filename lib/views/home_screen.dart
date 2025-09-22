@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../models/card_item.dart';
 import '../viewmodels/card_view_model.dart';
 import '../widgets/flip_card.dart';
 import '../widgets/loading_widget.dart' hide ErrorWidget;
-import '../theme/app_colors.dart';
 import '../services/mock_data_service.dart';
 import 'create_page.dart';
 import 'profile_page.dart';
@@ -82,12 +82,13 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           // Netflix tarzı logo
           Text(
-            'ReePod',
-            style: TextStyle(
-              color: Colors.red,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.2,
+            'REEPOD',
+            style: GoogleFonts.bebasNeue(
+              textStyle: const TextStyle(
+                color: Color(0xFFE50914),
+                fontSize: 28,
+                letterSpacing: 1.0,
+              ),
             ),
           ),
 
