@@ -17,12 +17,12 @@ class GeminiService {
         model: ApiConfig.geminiTextModel,
         apiKey: ApiConfig.geminiApiKey,
       );
-      
+
       _imageModel = GenerativeModel(
         model: ApiConfig.geminiImageModel,
         apiKey: ApiConfig.geminiApiKey,
       );
-      
+
       _logger.i('Gemini modelleri başarıyla başlatıldı');
     } catch (e) {
       _logger.e('Gemini model başlatma hatası: $e');
@@ -34,10 +34,10 @@ class GeminiService {
   static Future<String> generateText(String prompt) async {
     try {
       _initializeModel();
-      
+
       final content = [Content.text(prompt)];
       final response = await _model!.generateContent(content);
-      
+
       _logger.i('Gemini metin üretimi tamamlandı');
       return response.text ?? 'Metin üretilemedi';
     } catch (e) {
@@ -47,15 +47,18 @@ class GeminiService {
   }
 
   /// Görsel üretimi (Gemini 2.5 Flash Image Preview)
-  static Future<List<Uint8List>> generateImages(String prompt, {int count = 1}) async {
+  static Future<List<Uint8List>> generateImages(
+    String prompt, {
+    int count = 1,
+  }) async {
     try {
       _initializeModel();
-      
+
       final content = [Content.text(prompt)];
       final response = await _imageModel!.generateContent(content);
-      
+
       List<Uint8List> images = [];
-      
+
       // Gemini 2.5 Flash Image Preview'dan gelen görselleri işle
       if (response.candidates?.isNotEmpty == true) {
         final candidate = response.candidates!.first;
@@ -70,7 +73,7 @@ class GeminiService {
           }
         }
       }
-      
+
       _logger.i('Gemini görsel üretimi tamamlandı: ${images.length} görsel');
       return images;
     } catch (e) {
@@ -83,21 +86,18 @@ class GeminiService {
   static Future<String> analyzeImage(Uint8List imageData, String prompt) async {
     try {
       _initializeModel();
-      
+
       final visionModel = GenerativeModel(
         model: ApiConfig.geminiVisionModel,
         apiKey: ApiConfig.geminiApiKey,
       );
-      
+
       final content = [
-        Content.multi([
-          TextPart(prompt),
-          DataPart('image/jpeg', imageData),
-        ])
+        Content.multi([TextPart(prompt), DataPart('image/jpeg', imageData)]),
       ];
-      
+
       final response = await visionModel.generateContent(content);
-      
+
       _logger.i('Gemini görsel analizi tamamlandı');
       return response.text ?? 'Görsel analiz edilemedi';
     } catch (e) {
@@ -107,16 +107,18 @@ class GeminiService {
   }
 
   /// Karma içerik üretimi (metin + görsel)
-  static Future<Map<String, dynamic>> generateMixedContent(String prompt) async {
+  static Future<Map<String, dynamic>> generateMixedContent(
+    String prompt,
+  ) async {
     try {
       _initializeModel();
-      
+
       final content = [Content.text(prompt)];
       final response = await _imageModel!.generateContent(content);
-      
+
       String text = '';
       List<Uint8List> images = [];
-      
+
       if (response.candidates?.isNotEmpty == true) {
         final candidate = response.candidates!.first;
         if (candidate.content?.parts?.isNotEmpty == true) {
@@ -129,12 +131,9 @@ class GeminiService {
           }
         }
       }
-      
+
       _logger.i('Gemini karma içerik üretimi tamamlandı');
-      return {
-        'text': text,
-        'images': images,
-      };
+      return {'text': text, 'images': images};
     } catch (e) {
       _logger.e('Gemini karma içerik üretim hatası: $e');
       throw Exception('Karma içerik üretimi başarısız: $e');

@@ -1,0 +1,83 @@
+---
+alwaysApply: true
+---
+
+## Genel Kurallar
+
+- **Mimari uyum**: MVVM + Provider yapısına birebir uy, mevcut dosya ve katman düzenini bozma.
+- **Kod kalitesi**: Kodlar sanki %100 test edilmiş gibi hatasız ve güvenli yazılmalı.
+- **Modern Flutter**: Gerektiği yerde `const`, `Selector`/`Consumer` ile minimal rebuild, lazy yükleme.
+- **Kütüphane uyumu**: Sadece güncel ve projedeki Flutter sürümüyle uyumlu paketler kullan.
+- **Debug**: `print` kullanma; her zaman `LoggerUtil`/`logger` ile logla.
+- **Platform**: Gerekli komutlar Windows PowerShell’e uygun verilecek.
+- **Kimlik Doğrulama**: BASIC AUTH kullanılacak. Eski mantık KULLANILMAYACAK.
+
+## Dosya/Dizin Kuralları
+
+- Var olan proje yapısını takip et:
+  - `lib/models/` → veri modelleri
+  - `lib/services/` → API/iş servisi (http tabanlı)
+  - `lib/viewmodels/` → `ChangeNotifier` tabanlı ViewModel’ler
+  - `lib/views/` → ekranlar ve UI bileşenleri (Netflix benzeri stil)
+  - `lib/providers/` → Provider kompozisyonu
+  - `lib/utils/logger_util.dart` → tüm debug logları buradan
+- Yeni modül/özellik eklerken ilgili tüm dosyaları üret: model, service, viewmodel, view.
+
+## API Servis Kuralları
+
+- `http` paketi kullanılacak. İstekler için timeout ve hata yakalama zorunlu.
+- BASIC AUTH header’ı her istekte güvenli şekilde eklenmeli.
+- `statusCode` kuralları:
+  - `410` → başarılı say, kullanıcıya hata gösterme.
+  - `417` → kullanıcıya görünür şekilde `errorMessage` göster (SnackBar/Dialog ya da ViewModel state üzerinden UI).
+- JSON parse işlemleri güvenli olmalı: `try/catch`, null kontrolleri, tip güvenliği.
+- Ağ hataları/timeout’larda düzgün error state üret, `LoggerUtil.error(...)` ile logla.
+
+## State Yönetimi (Provider + MVVM)
+
+- ViewModel’ler `ChangeNotifier` türevi olacak.
+- Durum bayrakları net tutulacak: `isLoading`, `hasError`, `errorMessage` vb.
+- `notifyListeners()` sadece state gerçekten değiştiğinde çağrılacak.
+- UI tarafında `Consumer`, `Selector` ve gerektiğinde `Provider.of(..., listen:false)` kombinasyonları ile minimum yeniden oluşturma hedeflenecek.
+
+## UI Kuralları (Netflix Benzeri Stil)
+
+- Koyu tema, düz ama shadow’lu modern görünüm, yeterli boşluk/padding.
+- Responsive tasarım: küçük/büyük ekranlarda bozulma olmayacak.
+- Gerekli yerlerde shimmer/skeleton loader kullanılabilir.
+- Tema ve stil projedeki mevcut yapı ile uyumlu (`AppTheme`, `AppColors`, mevcut TextStyle’lar).
+
+## Hata Yönetimi ve Loglama
+
+- Tüm beklenmeyen durumlar `try/catch` ile güvenli ele alınmalı.
+- Kullanıcıya gösterilecek hatalar ViewModel state üzerinden UI’ya aktarılmalı.
+- Debug/diagnostic için `LoggerUtil.debug/info/warn/error` kullanılmalı; `print` KULLANILMAYACAK.
+
+## Performans ve Optimizasyon
+
+- `const` widget’lar, `final` değişkenler; gereksiz rebuild’lerden kaçınma.
+- Liste/grid bileşenlerinde lazy yükleme ve cache stratejileri.
+- Ağ isteklerinde idempotent çağrılar ve gerekirse minimal tekrar denemesi.
+
+## Test Varsayımları
+
+- Kodlar test edilmiş gibi yazılmalı: kenar durumları düşünülmüş, null güvenliği, beklenen status code varyasyonları işlenmiş.
+- Model-serileştirme, servis cevapları ve ViewModel state akışları tutarlı.
+
+## Terminal (Windows PowerShell) Notları
+
+- Paket yükleme/güncelleme:
+  - `flutter pub get`
+  - `flutter pub upgrade`
+- Çalıştırma:
+  - `flutter run`
+- Format/Lint:
+  - `flutter format .`
+  - `flutter analyze`
+
+## Uygulama
+
+- Bu kurallar yeni entegre edilecek tüm modüller için varsayılan kabul edilir.
+- Kural çakışması olduğunda: Mimari uyum + güvenli kodlama + kullanıcı deneyimi önceliklidir.
+
+
