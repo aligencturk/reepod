@@ -26,8 +26,10 @@ class ImageSaveService {
       }
 
       // Dosya adı oluştur
-      final name = fileName ?? 'ai_generated_${DateTime.now().millisecondsSinceEpoch}.png';
-      
+      final name =
+          fileName ??
+          'ai_generated_${DateTime.now().millisecondsSinceEpoch}.png';
+
       _logger.i('Saving image to gallery: $name');
       _logger.i('Image size: ${imageData.length} bytes');
 
@@ -38,7 +40,7 @@ class ImageSaveService {
 
       // Galeriye kaydet
       await Gal.putImage(tempFile.path);
-      
+
       // Geçici dosyayı sil
       await tempFile.delete();
 
@@ -61,7 +63,7 @@ class ImageSaveService {
       // Uygulama dizinini al
       final directory = await getApplicationDocumentsDirectory();
       final imagesDir = Directory('${directory.path}/generated_images');
-      
+
       // Dizin yoksa oluştur
       if (!await imagesDir.exists()) {
         await imagesDir.create(recursive: true);
@@ -69,15 +71,17 @@ class ImageSaveService {
       }
 
       // Dosya adı oluştur
-      final name = fileName ?? 'ai_generated_${DateTime.now().millisecondsSinceEpoch}.png';
+      final name =
+          fileName ??
+          'ai_generated_${DateTime.now().millisecondsSinceEpoch}.png';
       final file = File('${imagesDir.path}/$name');
-      
+
       _logger.i('Saving image to app directory: ${file.path}');
       _logger.i('Image size: ${imageData.length} bytes');
 
       // Görseli kaydet
       await file.writeAsBytes(imageData);
-      
+
       _logger.i('Image saved successfully to app directory');
       return file.path;
     } catch (e) {
@@ -89,18 +93,25 @@ class ImageSaveService {
   /// Depolama izni iste
   Future<bool> _requestStoragePermission() async {
     try {
-      // Android 13+ için photos permission
       if (Platform.isAndroid) {
-        final status = await Permission.photos.request();
-        if (status.isGranted) {
+        // 1) Klasik depolama izni (Android 12 ve öncesi için)
+        final storage = await Permission.storage.request();
+        if (storage.isGranted) {
+          _logger.i('Storage permission granted');
+          return true;
+        }
+
+        // 2) Android 13+ medya görselleri izni (plugin destekliyorsa)
+        final photos = await Permission.photos.request();
+        if (photos.isGranted) {
           _logger.i('Photos permission granted');
           return true;
-        } else {
-          _logger.w('Photos permission denied: $status');
-          return false;
         }
+
+        _logger.w('Permissions denied. storage=$storage, photos=$photos');
+        return false;
       }
-      
+
       // iOS için photos permission
       if (Platform.isIOS) {
         final status = await Permission.photos.request();
@@ -112,7 +123,7 @@ class ImageSaveService {
           return false;
         }
       }
-      
+
       return true;
     } catch (e) {
       _logger.e('Error requesting storage permission: $e');
@@ -125,7 +136,7 @@ class ImageSaveService {
     try {
       final directory = await getApplicationDocumentsDirectory();
       final imagesDir = Directory('${directory.path}/generated_images');
-      
+
       if (!await imagesDir.exists()) {
         return [];
       }
@@ -135,10 +146,12 @@ class ImageSaveService {
           .where((file) => file is File && _isImageFile(file.path))
           .cast<File>()
           .toList();
-      
+
       // Tarihe göre sırala (en yeni önce)
-      imageFiles.sort((a, b) => b.lastModifiedSync().compareTo(a.lastModifiedSync()));
-      
+      imageFiles.sort(
+        (a, b) => b.lastModifiedSync().compareTo(a.lastModifiedSync()),
+      );
+
       _logger.i('Found ${imageFiles.length} saved images');
       return imageFiles;
     } catch (e) {
@@ -174,7 +187,7 @@ class ImageSaveService {
     try {
       final directory = await getApplicationDocumentsDirectory();
       final imagesDir = Directory('${directory.path}/generated_images');
-      
+
       if (await imagesDir.exists()) {
         await imagesDir.delete(recursive: true);
         _logger.i('All images cleared');
