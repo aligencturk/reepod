@@ -4,6 +4,7 @@ import '../services/openai_service.dart';
 import '../services/gemini_image_service.dart';
 import '../services/image_save_service.dart';
 import '../utils/logger_util.dart';
+import 'package:image_picker/image_picker.dart';
 
 /// AI Foto Oluşturma Sayfası
 /// iOS tarzında modern ve şık tasarım
@@ -23,6 +24,10 @@ class _CreatePageState extends State<CreatePage> {
   String _selectedModel = 'OpenAI DALL-E 3';
   bool _isGenerating = false;
   Uint8List? _generatedImage;
+  final TextEditingController _editController = TextEditingController();
+  Uint8List? _inputImage;
+  String? _inputMimeType;
+  String _activeMode = 'generate'; // generate | edit
 
   @override
   void initState() {
@@ -54,6 +59,7 @@ class _CreatePageState extends State<CreatePage> {
   void dispose() {
     _promptController.dispose();
     _openAIService.dispose();
+    _editController.dispose();
     super.dispose();
   }
 
@@ -77,20 +83,31 @@ class _CreatePageState extends State<CreatePage> {
 
             const SizedBox(height: 40),
 
-            // Prompt girişi
-            _buildPromptSection(),
+            // Mod Seçici (Sıfırdan Üret / Var Olanı Düzenle)
+            _buildModeSelector(),
 
-            const SizedBox(height: 24),
+            if (_activeMode == 'generate') ...[
+              // Prompt girişi
+              _buildPromptSection(),
 
-            // Stil seçimi
-            _buildStyleSection(),
+              const SizedBox(height: 24),
 
-            const SizedBox(height: 32),
+              // Stil seçimi
+              _buildStyleSection(),
 
-            // Oluştur butonu
-            _buildCreateButton(),
+              const SizedBox(height: 32),
 
-            const SizedBox(height: 24),
+              // Oluştur butonu
+              _buildCreateButton(),
+
+              const SizedBox(height: 24),
+
+              // Örnekler
+              _buildExamplesSection(),
+            ] else ...[
+              // Mevcut görseli düzenleme
+              _buildEditExistingSection(),
+            ],
 
             // Son oluşturulan görsel
             if (_generatedImage != null) ...[
@@ -98,10 +115,110 @@ class _CreatePageState extends State<CreatePage> {
               const SizedBox(height: 24),
             ],
 
-            // Örnekler
-            _buildExamplesSection(),
-
             const SizedBox(height: 100), // Bottom nav için boşluk
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Mod seçici - Üret vs Düzenle
+  Widget _buildModeSelector() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A1A1A),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.withOpacity(0.1), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            spreadRadius: 0,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildModeChip(
+              label: 'Sıfırdan Üret',
+              isActive: _activeMode == 'generate',
+              onTap: () {
+                LoggerUtil.ui('Switch mode', data: 'generate');
+                setState(() => _activeMode = 'generate');
+              },
+              activeGradient: const LinearGradient(
+                colors: [Colors.red, Color(0xFFE50914)],
+              ),
+              icon: Icons.auto_awesome,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: _buildModeChip(
+              label: 'Var Olanı Düzenle',
+              isActive: _activeMode == 'edit',
+              onTap: () {
+                LoggerUtil.ui('Switch mode', data: 'edit');
+                setState(() => _activeMode = 'edit');
+              },
+              activeGradient: const LinearGradient(
+                colors: [Colors.purple, Color(0xFF7B1FA2)],
+              ),
+              icon: Icons.auto_fix_high,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildModeChip({
+    required String label,
+    required bool isActive,
+    required VoidCallback onTap,
+    required LinearGradient activeGradient,
+    required IconData icon,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          gradient: isActive ? activeGradient : null,
+          color: isActive ? null : const Color(0xFF2D2D2D),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isActive ? Colors.transparent : Colors.grey.withOpacity(0.2),
+            width: 1,
+          ),
+          boxShadow: isActive
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 12,
+                    offset: const Offset(0, 6),
+                  ),
+                ]
+              : [],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: Colors.white, size: 18),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ],
         ),
       ),
@@ -368,6 +485,274 @@ class _CreatePageState extends State<CreatePage> {
         ),
       ),
     );
+  }
+
+  /// Mevcut görseli AI ile düzenleme bölümü
+  Widget _buildEditExistingSection() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A1A1A),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.grey.withOpacity(0.1), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            spreadRadius: 0,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.purple.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.image, color: Colors.purple, size: 20),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                'Mevcut Görseli Düzenle',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 16),
+
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: _isGenerating ? null : _pickImage,
+              icon: const Icon(Icons.upload_file, size: 16),
+              label: const Text('Görsel Yükle'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.purple,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          if (_inputImage != null) ...[
+            Container(
+              height: 180,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Colors.grey.withOpacity(0.3),
+                  width: 1,
+                ),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.memory(_inputImage!, fit: BoxFit.cover),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            Container(
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F0F0F),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: Colors.grey.withOpacity(0.2),
+                  width: 1,
+                ),
+              ),
+              child: TextField(
+                controller: _editController,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w400,
+                ),
+                decoration: InputDecoration(
+                  hintText:
+                      'Nasıl düzenlensin? (örn: arka planı yumuşat, tonları ısıt)',
+                  hintStyle: TextStyle(color: Colors.grey[500], fontSize: 16),
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.all(16),
+                ),
+                maxLines: 3,
+                textAlignVertical: TextAlignVertical.top,
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: ElevatedButton.icon(
+                onPressed: _isGenerating ? null : _editImage,
+                icon: _isGenerating
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Icon(Icons.auto_fix_high),
+                label: Text(
+                  _isGenerating ? 'Düzenleniyor...' : 'AI ile Düzenle',
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.purple,
+                  foregroundColor: Colors.white,
+                ),
+              ),
+            ),
+          ] else ...[
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F0F0F),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Colors.grey.withOpacity(0.2),
+                  width: 1,
+                ),
+              ),
+              child: const Text(
+                'Bir görsel yükleyin ve talimat yazarak AI ile düzenleyin.',
+                style: TextStyle(color: Colors.grey, fontSize: 14),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Future<void> _pickImage() async {
+    try {
+      final picker = ImagePicker();
+      final XFile? file = await picker.pickImage(source: ImageSource.gallery);
+      if (file == null) return;
+      final bytes = await file.readAsBytes();
+
+      LoggerUtil.info('Görsel yüklendi: ${file.name} (${bytes.length} bytes)');
+
+      if (mounted) {
+        setState(() {
+          _inputImage = bytes;
+          final lower = file.name.toLowerCase();
+          if (lower.endsWith('.png')) {
+            _inputMimeType = 'image/png';
+          } else if (lower.endsWith('.webp')) {
+            _inputMimeType = 'image/webp';
+          } else if (lower.endsWith('.gif')) {
+            _inputMimeType = 'image/gif';
+          } else {
+            _inputMimeType = 'image/jpeg';
+          }
+        });
+      }
+    } catch (e, st) {
+      LoggerUtil.error('Görsel yükleme hatası', e, st);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Görsel yüklenemedi: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _editImage() async {
+    if (_inputImage == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Lütfen önce bir görsel yükleyin'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    if (_geminiImageService == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Gemini servisi başlatılamadı. API anahtarını kontrol edin.',
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final instruction = (_editController.text.trim().isEmpty)
+        ? '$_selectedStyle tarzında kalite artır, renkleri iyileştir'
+        : _editController.text.trim();
+
+    if (mounted) {
+      setState(() {
+        _isGenerating = true;
+      });
+    }
+
+    try {
+      LoggerUtil.info('AI düzenleme başlıyor: $instruction');
+      final edited = await _geminiImageService!.editImage(
+        inputImageBytes: _inputImage!,
+        instruction: instruction,
+        inputMimeType: _inputMimeType ?? 'image/jpeg',
+      );
+
+      if (mounted) {
+        setState(() {
+          _generatedImage = edited;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Görsel başarıyla düzenlendi!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        _showGeneratedImage(edited);
+      }
+    } catch (e, st) {
+      LoggerUtil.error('AI düzenleme hatası', e, st);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Düzenleme başarısız: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isGenerating = false;
+        });
+      }
+    }
   }
 
   /// Oluştur butonu
